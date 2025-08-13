@@ -58,6 +58,11 @@ class Server
 		// add 2 ft
 		const std::vector<ServerConfig>& getServerConfigs() const ;
 		static void printServerConfigs(const std::vector<ServerConfig>& servers) ;
+
+
+		static void printRoutes(const std::map<std::string, RouteConfig>& routes);
+
+		RouteConfig selectServerAndRoute(HttpRequest& request, ServerConfig& server, std::string& fullPath);
 };
 
 

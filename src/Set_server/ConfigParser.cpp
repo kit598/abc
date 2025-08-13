@@ -248,3 +248,73 @@ void ConfigParser::printConfigParser(const std::vector<ServerConfig>& servers)
 		std::cout << "\n";
 	}
 }
+
+
+
+
+void ConfigParser::printSelectedServer(const ServerConfig* s)
+{
+	if (!s)
+	{
+		std::cout << RED << "Selected Server is NULL" << RESET << std::endl;
+		return;
+	}
+
+	std::cout << SEV_COLOR;
+	std::cout << "\n\n---- Selected Server --------\n";
+	std::cout << SEV_COLOR << RESET;
+
+
+
+	std::cout << SEV_COLOR;
+	std::cout << "Port: " << s->getPort() << "\n";
+	std::cout << SEV_COLOR << RESET;
+	std::cout << "Host: " << s->getHost() << "\n";
+	std::cout << "Server Name: " << s->getServerName() << "\n";
+	std::cout << "Root: " << s->getRoot() << "\n";
+	std::cout << "Index: " << s->getIndex() << "\n";
+	std::cout << "Client Max Body Size: " << s->getClientMaxBodySize() << "\n";
+
+	std::cout << "Error Pages:\n";
+	const std::map<int, std::string>& errPages = s->getErrorPages();
+	for (std::map<int, std::string>::const_iterator it = errPages.begin(); it != errPages.end(); ++it)
+		std::cout << "  " << it->first << " => " << it->second << "\n";
+
+	std::cout << "Routes:\n";
+	const std::map<std::string, RouteConfig>& routes = s->getRoutes();
+	for (std::map<std::string, RouteConfig>::const_iterator it = routes.begin(); it != routes.end(); ++it) 
+	{
+		const RouteConfig& route = it->second;
+		std::cout << SEV_COLOR << "  Path: " << route.getPath() << SEV_COLOR << RESET << "\n";
+		std::cout << "    Root: " << route.getRoot() << "\n";
+		std::cout << "    Index: " << route.getIndex() << "\n";
+		std::cout << "    Autoindex: " << (route.getAutoindex() ? "on" : "off") << "\n";
+		std::cout << "    Client Max Body Size: " << route.getClientMaxBodySize() << "\n";
+		std::cout << "    Upload Store: " << route.getUploadStore() << "\n";
+
+		// Allowed Methods
+		std::cout << "    Allow Methods: ";
+		const std::vector<std::string>& methods = route.getMethods();
+		for (size_t j = 0; j < methods.size(); ++j) 
+		{
+			std::cout << methods[j];
+			if (j + 1 < methods.size()) std::cout << ", ";
+		}
+		std::cout << "\n";
+
+		// CGI Map
+		std::cout << "    CGI Passes:\n";
+		const std::map<std::string, std::string>& cgis = route.getCGIs();
+		for (std::map<std::string, std::string>::const_iterator cit = cgis.begin(); cit != cgis.end(); ++cit) 
+		{
+			std::cout << "      " << cit->first << " => " << cit->second << "\n";
+		}
+
+		// Return Directive
+		if (route.getReturnStatus() != 0) 
+		{
+			std::cout << "    Return: " << route.getReturnStatus() << " => " << route.getReturnValue() << "\n";
+		}
+	}
+	std::cout << "\n";
+}

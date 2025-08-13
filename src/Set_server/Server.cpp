@@ -118,7 +118,7 @@ bool	Server::isServerSocket(int socket)
 
 bool Server::start(ConnectionManager& cm)
 {
-    std::cout<< "<<<<<<<<<<   Server start   >>>>>>>>>>"<<std::endl;
+    // std::cout<< "<<<<<<<<<<   Server start   >>>>>>>>>>"<<std::endl;
 
 
     std::set<int>   used_ports;
@@ -127,7 +127,7 @@ bool Server::start(ConnectionManager& cm)
 
     for( std::vector<ServerConfig>::iterator it = serverconfigs.begin(); it != serverconfigs.end(); ++it)
     {
-		std::cout<< "<<<<<<<<<<   Server start for loop   >>>>>>>>>>"<<std::endl;
+		// std::cout<< "<<<<<<<<<<   Server start for loop   >>>>>>>>>>"<<std::endl;
         int	current_port = it->getPort();
 
 		cm.addRawServer(*it);
@@ -206,7 +206,7 @@ bool Server::start(ConnectionManager& cm)
 
 int Server::run()
 {
-	std::cout<< "<<<<<<<<<<   Server run   >>>>>>>>>"<<std::endl;
+	// std::cout<< "<<<<<<<<<<   Server run   >>>>>>>>>"<<std::endl;
 	ConnectionManager cm;
 	
 	//Create epoll 
@@ -268,14 +268,15 @@ int Server::run()
 		// 	break; 
 
 		//nfds = epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
-		std::cout<< "epoll_wait"<<std::endl;
+		std::cout<< "		epoll_wait"; //<<std::endl;
 		int nfds = epoll_wait(epoll_fd, events, SERV_MAX_EVENTS, SERV_WAIT_TIMEOUT);
 		// try to continue
-		if(nfds == 0)
-		{
-			std::cout<< "nfds = 0"<<std::endl;
-			continue;
-		}
+		if(nfds < 1)
+			std::cout<< "		nfds = " << nfds << std::endl;	
+		if(nfds > 0)
+			std::cout<<YELLOW "		nfds = " << nfds << RESET<< std::endl;
+
+
 		// nfds error
 		if (nfds == -1)
 			throw std::runtime_error("Error epoll_wait" + std::string(strerror(errno)));
@@ -284,16 +285,28 @@ int Server::run()
 			int activeFd = events[i].data.fd;
 			// ServerConfig *server = cm.getServer(events[i].data.fd);// kit add comment
 			ServerConfig *server = NULL;// kit add
+
 			if (serverFdMap.count(events[i].data.fd))// kit add
 				server = serverFdMap[events[i].data.fd];// kit add
+			
+			if (server) // kit add
+			{
+				std::cout << "		292 Active fd# " << activeFd << " is a server socket, server name: " << server->getServerName() << std::endl;  ///kit add print
+			}
+			else
+			{
+				std::cout << "		296 Active fd# " << activeFd << " is a client socket" << std::endl;  ///kit add print
+			}
+			
+			
 
-			std::cout<<YELLOW "Epoll event active fd: "<< activeFd << RESET<<std::endl;
+			std::cout<<YELLOW "		Epoll event active fd: "<< activeFd << RESET<<std::endl;
 
 
 			//check server fds
 			if(isServerSocket(activeFd))
 			{
-				std::cout<< "<<<<<<<<<<   Servers checking...   >>>>>>>>>"<<std::endl;
+				// std::cout<< "<<<<<<<<<<   Servers checking...   >>>>>>>>>"<<std::endl;
 				// error handling
 				//Generic socket error || Remote shutdown of read stream || Hang-up (e.g. client disconnected)
 				if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLRDHUP) || (events[i].events & EPOLLHUP))
@@ -310,7 +323,8 @@ int Server::run()
 				}
 
 				//coming new request
-				{						
+					std::cout <<GREEN "325 test =====  " RESET<< std::endl;
+			
 					if(!server)
 					{
 						// kit add
@@ -322,9 +336,9 @@ int Server::run()
 					else // kit add
 					{
 						std::cout<<GREEN;
-						std::cout<<"Nave server: " << server->getServerName() << std::endl;
-						std::cout<<"Listening on port: " << server->getPort() << std::endl;
-						std::cout << "fd: " << activeFd << std::endl;
+						std::cout<<"Nave server		: " << server->getServerName() << std::endl;
+						std::cout<<"Listening on port	: " << server->getPort() << std::endl;
+						std::cout <<"fd			: " << activeFd << std::endl;
 						// std::cout<<"Root: " << server->getRoot() << std::endl;
 						// std::cout<<"Index: " << server->getIndex() << std::endl;
 						// std::cout<<"Client Max Body Size: " << server->getClientMaxBodySize() << std::endl;
@@ -339,11 +353,53 @@ int Server::run()
 						throw std::runtime_error("Unable to accept()" + std::string(strerror(errno)));
 					cm.openConnection(client_socket, *server);
 					continue;
-				}
 			}
 
 			// check client fds
-			{
+
+				// char buffer[4096] = {0};
+				// memset(buffer, 0, sizeof(buffer));
+				// buffer[0] = '\0'; // Ensure buffer is empty
+            
+				// int bytes = recv(activeFd, buffer, sizeof(buffer), 0);
+				// std::cout << "activeFd: " << activeFd << std::endl;
+				// std::cout << "bytes received: " << bytes << std::endl;
+				// std::cout << "Buffer: \n" << buffer << std::endl;
+				// if (bytes <= 0){
+				// 	close (activeFd);
+				// 	continue;
+				// }
+				// if (strlen(buffer) == 0){
+				// 	close(activeFd);
+				// 	continue;
+				// }
+			    // HttpRequest     request;
+			    // request.HttpRequest::parseHttpRequest(buffer, request);
+			    // // HttpRequest::printHttpRequest(request);
+			    // // std::cout <<GREEN "test public variable method: " RESET<< request.method << "\n";
+
+
+
+
+
+				std::cout <<GREEN "381 test =====  " RESET<< std::endl;
+				if (server == NULL)
+				{
+					std::cout<<RED "No server found for fd: " << activeFd << RESET<<std::endl;
+					throw std::runtime_error("ERROR Unable to load server configuration for fd....");
+				}
+				else
+				{
+					std::cout <<GREEN;
+					std::cout <<"Nave server		: " << server->getServerName() << std::endl;
+					std::cout <<"Listening on port	: " << server->getPort() << std::endl;
+					std::cout <<"fd 	 		: " 	<< activeFd << std::endl;
+					std::cout<<GREEN << RESET;
+				}
+
+
+				printRoutes(server->getRoutes()); // kit add
+
 				close (activeFd); // kit add
 				// std::cout<< "<<<<<<<<<<   Clients checking...   >>>>>>>>>"<<std::endl;
 				// 	if (cm.findConnection(activeFd) == NULL)
@@ -357,7 +413,6 @@ int Server::run()
 
 				// 	}
 
-			}
 
 
 		}
@@ -371,3 +426,71 @@ int Server::run()
 
 
 
+
+
+void Server::printRoutes(const std::map<std::string, RouteConfig>& routes)
+{
+	std::cout << "=== Printing RouteConfig Map ===" << std::endl;
+
+	for (std::map<std::string, RouteConfig>::const_iterator it = routes.begin(); it != routes.end(); ++it)
+	{
+		std::cout << "=== Printing RouteConfig Map ===" << std::endl;
+
+		const std::string& path = it->first;
+		const RouteConfig& route = it->second;
+
+		std::cout << "Route Path: " << path << std::endl;
+		std::cout << "  Root: " << route.getRoot() << std::endl;
+		std::cout << "  Index: " << route.getIndex() << std::endl;
+		std::cout << "  Methods: ";
+		std::vector<std::string> methods = route.getMethods();
+		for (size_t i = 0; i < methods.size(); ++i)
+		{
+			std::cout << methods[i];
+			if (i + 1 < methods.size()) std::cout << ", ";
+		}
+		std::cout << std::endl;
+		std::cout << "-------------------------------" << std::endl;
+	}
+}
+
+
+
+RouteConfig Server::selectServerAndRoute(HttpRequest& request, ServerConfig& server, std::string& fullPath)
+{
+	std::cout << "Selecting route for: " << request.method << " " << request.path << std::endl;
+
+	
+	const std::map<std::string, RouteConfig>& routes = server.getRoutes();
+	RouteConfig matchRoute;
+	size_t      longestMatch = 0;
+
+	for (std::map<std::string, RouteConfig>::const_iterator it = routes.begin(); it != routes.end(); ++it)
+	{
+		const std::string& routePath = it->first;
+		if (request.path.find(routePath) == 0 && routePath.length() > longestMatch)
+		{
+			matchRoute = it->second;
+			longestMatch = routePath.length();
+		}
+	}
+
+	if (matchRoute.getPath().empty())
+	{
+		std::cerr << RED << "No matching route for path: " << request.path << RESET << std::endl;
+		throw std::runtime_error("No matching route found");
+	}
+
+	// สร้าง fullPath: root + ส่วนที่เหลือจาก path
+	fullPath = matchRoute.getRoot();
+	std::string remaining = request.path.substr(matchRoute.getPath().length());
+	if (!remaining.empty() && remaining[0] == '/')
+		fullPath += remaining;
+	else
+		fullPath += "/" + remaining;
+
+	std::cout << "Matched route: " << matchRoute.getPath() << std::endl;
+	std::cout << "Full file path: " << fullPath << std::endl;
+
+	return matchRoute;
+}

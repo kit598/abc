@@ -102,3 +102,71 @@ re: fclean all
 t: all clean
 	@echo "$(GREEN)✅ run program$(COLOR_RESET)"
 	./Server $(CONFIG)
+
+
+
+PORT=8080
+HOST=localhost
+
+
+
+t51:
+	curl -v -X POST "http://$(HOST):$(PORT)/session/" \
+		-H "Content-Type: application/x-www-form-urlencoded" \
+		--data "username=kit"
+
+t52:
+	curl -v -X GET "http://$(HOST):$(PORT)/delete/delete.php"
+
+t53:
+	curl -v -X GET "http://$(HOST):$(PORT)/"
+
+t54:
+	curl -v -X GET "http://$(HOST):$(PORT)/uploads/"
+
+t55:
+	curl -v -X POST "http://$(HOST):$(PORT)/uploads" \
+		-H "Content-Type: text/html" \
+		--data "<h1>Hello World</h1>"
+
+t56:
+	curl -v -X POST "http://$(HOST):$(PORT)/uploads" \
+		--data-binary @wwwroot/www1/favicon.ico
+
+t57: 
+	curl -v -X GET "http://$(HOST):$(PORT)/uploads/s2.txt"
+#t57  1aaa  3aaa
+
+
+t58:
+	curl -v -X DELETE "http://$(HOST):$(PORT)/uploads/s2.txt"
+
+t59:
+	curl -v -X GET "http://$(HOST):$(PORT)/cgi-bin/processPlayer.py"
+
+t60:
+	curl -v -X POST "http://$(HOST):$(PORT)/cgi-bin/processPlayer.py" \
+		-H "Content-Type: application/x-www-form-urlencoded" \
+		--data "name=kit&score=42"
+
+
+
+
+t61:
+	curl -v -X GET "http://$(HOST):$(PORT)/redirect"
+
+t62:
+	curl -v -X GET "http://$(HOST):$(PORT)/session"
+
+
+
+
+
+t63:
+	curl -v -X GET "http://$(HOST):$(PORT)/../etc/passwd"
+
+t64:
+	curl -v -X DELETE "http://$(HOST):$(PORT)/uploads/notfound.txt"
+
+t65:
+	curl -v -X GET "http://$(HOST):$(PORT)/notfound.txt"
